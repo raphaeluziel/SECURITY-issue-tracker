@@ -40,20 +40,22 @@ module.exports = function (app) {
     
     .post(function (req, res){
       var project = req.params.project;
-      console.log(req.body.issue_title);
+      //console.log(req.body.issue_title);
       
       var query = issueModel.findOne({issue_title: project}, function(err, data){
         // If issue is not in the database add it
         if(!data){
+          //console.log(req.body.issue_title, req.body.issue_text, req.body.created_by);
           var newIssue = new issueModel({
             issue_title: req.body.issue_title, 
             issue_text: req.body.issue_text, 
             created_by: req.body.created_by,
             assigned_to: req.body.assigned_to,
-            status_string: req.body.status_string
+            status_text: req.body.status_text
           });
           newIssue.save(function(err, data){
-          console.log("issue has been saved to the database!");
+            res.json({message: "all ok"});
+          //console.log("issue has been saved to the database!");
           });
         }
         else{
