@@ -28,20 +28,45 @@ suite('Functional Tests', function() {
           status_text: 'In QA'
         })
         .end(function(err, res){
-          assert.equal(res.status, 200);
-          
-          //fill me in too!
-          
+          assert.equal(res.body.status, 200);
+          assert.equal(res.type, 'application/json', 'response should be json');
+          assert.equal(res.body.issue_title, 'Title');
+          assert.equal(res.body.issue_text, 'text');
+          assert.equal(res.body.created_by, 'Functional Test - Every field filled in');
+          assert.equal(res.body.assigned_to, 'Chai and Mocha');
+          assert.equal(res.body.status_text, 'In QA');
           done();
         });
       });
       
       test('Required fields filled in', function(done) {
-        
+        chai.request(server)
+        .post('/api/issues/test')
+        .send({
+          issue_title: 'Title',
+          issue_text: 'text',
+        })
+        .end(function(err, res){
+          assert.equal(res.body.status, 200);
+          assert.equal(res.body.issue_title, 'Title');
+          assert.equal(res.body.issue_text, 'text');
+          done();
+        });
       });
       
       test('Missing required fields', function(done) {
-        
+        chai.request(server)
+        .post('/api/issues/test')
+        .send({
+          issue_title: '',
+          issue_text: '',
+        })
+        .end(function(err, res){
+          assert.equal(res.body.status, 200);
+          assert.equal(res.body.issue_title, '');
+          assert.equal(res.body.issue_text, '');
+          done();
+        });
       });
       
     });
