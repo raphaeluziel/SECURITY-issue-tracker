@@ -20,6 +20,7 @@ mongoose.connect(process.env.MONGO_DB, { useNewUrlParser: true });
 var Schema = mongoose.Schema;
 
 var issueSchema = new Schema({
+  project: {type: String, required: true},
   issue_title: {type: String, required: true},
   issue_text: {type: String, required: true},
   created_on: Date,
@@ -39,7 +40,7 @@ module.exports = function (app) {
     .get(function (req, res){
       var project = req.params.project;
     
-      var query = issueModel.find({issue_title: "Naming"}, function(err, data){
+      var query = issueModel.find({project: project}, function(err, data){
         if (err) { res.send('error accessing database'); }
         if (!data) { res.send('database is empty'); }
         res.send(data);
@@ -52,16 +53,17 @@ module.exports = function (app) {
       var project = req.params.project;     
       var query = issueModel.findOne({issue_title: req.body.issue_title}, function(err, data){
         var newIssue = new issueModel({
+            project: project,
             issue_title: req.body.issue_title, 
             issue_text: req.body.issue_text, 
             created_on: new Date(),
             updated_on: new Date(),
             created_by: req.body.created_by,
-            assigned_to: req.body.assigned_to,
+            assigned_to: req.body.assigned_to || "",
             open: true,
-            status_text: req.body.status_text
+            status_text: req.body.status_text || ""
           });
-          newIssue.save(function(err, data){
+          newIssue.save(function(err, data){                                      
             res.json({
               issue_title: data.issue_title, 
               issue_text: data.issue_text, 
@@ -72,7 +74,9 @@ module.exports = function (app) {
               open: data.open,
               status_text: data.status_text,
               _id: data._id
+              
             });
+                                            
           });
       });
       
@@ -95,9 +99,9 @@ module.exports = function (app) {
             issue_text: req.body.issue_text, 
             updated_on: new Date(),
             created_by: req.body.created_by,
-            assigned_to: req.body.assigned_to,
+            assigned_to: req.body.assigned_to || "",
             open: req.body.open || true,
-            status_text: data.status_text,
+            status_text: data.status_text || "",
           }}, function(){
             res.send('successfully updated');
           });
