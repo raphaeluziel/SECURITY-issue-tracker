@@ -39,10 +39,13 @@ module.exports = function (app) {
   
     .get(function (req, res){
       var project = req.params.project;
+      console.log(req.query);
+      
     
       var query = issueModel.find({project: project}, function(err, data){
         if (err) { res.send('error accessing database'); }
-        if (!data) { res.send('database is empty'); }
+        if (data.length == 0) { res.send('database is empty'); }
+        //console.log(data);
         res.send(data);
       });
     
@@ -50,8 +53,13 @@ module.exports = function (app) {
     })
     
     .post(function (req, res){
-      var project = req.params.project;     
-      var query = issueModel.findOne({issue_title: req.body.issue_title}, function(err, data){
+      var project = req.params.project; 
+    
+      if(!req.body.issue_title || !req.body.issue_text || !req.body.created_by) {
+        res.send('missing inputs');
+      }
+    
+      else{
         var newIssue = new issueModel({
             project: project,
             issue_title: req.body.issue_title, 
@@ -74,11 +82,9 @@ module.exports = function (app) {
               open: data.open,
               status_text: data.status_text,
               _id: data._id
-              
-            });
-                                            
+            });                                 
           });
-      });
+        }
       
     })
     
@@ -95,13 +101,13 @@ module.exports = function (app) {
         }
         else{
           issueModel.updateOne({ _id: req.body._id }, { $set: { 
-            issue_title: req.body.issue_title, 
-            issue_text: req.body.issue_text, 
+            issue_title: req.body.issue_title || data.issue_title, 
+            issue_text: req.body.issue_text || data.issue_text, 
             updated_on: new Date(),
-            created_by: req.body.created_by,
-            assigned_to: req.body.assigned_to || "",
-            open: req.body.open || true,
-            status_text: data.status_text || "",
+            created_by: req.body.created_by || data.created_by,
+            assigned_to: req.body.assigned_to || data.assigned_to,
+            open: req.body.open || data.open,
+            status_text: data.status_text || data.status_text,
           }}, function(){
             res.send('successfully updated');
           });
