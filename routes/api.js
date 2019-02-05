@@ -38,18 +38,24 @@ module.exports = function (app) {
   app.route('/api/issues/:project')
   
     .get(function (req, res){
+    
       var project = req.params.project;
-      console.log(req.query);
-      
     
-      var query = issueModel.find({project: project}, function(err, data){
-        if (err) { res.send('error accessing database'); }
-        if (data.length == 0) { res.send('database is empty'); }
-        //console.log(data);
+      var query = issueModel.find({project: project})
+      
+      if(req.query._id) { query.where('_id').equals(req.query._id); }
+      if(req.query.issue_title) { query.where('issue_title').equals(req.query.issue_title); }
+      if(req.query.issue_text) { query.where('issue_text').equals(req.query.issue_text); }
+      if(req.query.created_by) { query.where('created_by').equals(req.query.created_by); }
+      if(req.query.assigned_to) { query.where('assigned_to').equals(req.query.assigned_to); }
+      if(req.query.status_text) { query.where('status_text').equals(req.query.status_text); }
+      if(req.query.open) { query.where('open').equals(req.query.open); }
+
+      query.exec(function(err, data){
+        if(err) {console.log('error executing');}
         res.send(data);
-      });
+      });       
     
-      
     })
     
     .post(function (req, res){
@@ -91,40 +97,48 @@ module.exports = function (app) {
     .put(function (req, res){
       var project = req.params.project;
 
-      if (!req.body.issue_title && !req.body.issue_text && !req.body.created_by && !req.body.assigned_to && !req.body.status_text && !req.body.open){
-        res.send('no update field sent');
+      if (!req.body.issue_title && 
+          !req.body.issue_text && 
+          !req.body.created_by && 
+          !req.body.assigned_to && 
+          !req.body.status_text && 
+          !req.body.open){
+        res.send('no updated field sent');
       }
       
-      var query = issueModel.findOne({_id: req.body._id}, function(err, data){
-        if(!data){
-          res.send("could not update " + req.body._id);
-        }
-        else{
-          issueModel.updateOne({ _id: req.body._id }, { $set: { 
-            issue_title: req.body.issue_title || data.issue_title, 
-            issue_text: req.body.issue_text || data.issue_text, 
-            updated_on: new Date(),
-            created_by: req.body.created_by || data.created_by,
-            assigned_to: req.body.assigned_to || data.assigned_to,
-            open: req.body.open || data.open,
-            status_text: data.status_text || data.status_text,
-          }}, function(){
-            res.send('successfully updated');
-          });
-        }  
-      });
-    
-    })
+    else{
+        var query = issueModel.findOne({_id: req.body._id}, function(err, data){
+          if(!data){
+            res.send("could not update " + req.body._id);
+          }
+          else{
+            issueModel.updateOne({ _id: req.body._id }, { $set: {
+              _id: req.body._id || data._id,
+              issue_title: req.body.issue_title || data.issue_title, 
+              issue_text: req.body.issue_text || data.issue_text, 
+              updated_on: new Date(),
+              created_by: req.body.created_by || data.created_by,
+              assigned_to: req.body.assigned_to || data.assigned_to,
+              open: req.body.open || data.open,
+              status_text: data.status_text || data.status_text,
+            }}, function(){
+              res.send('successfully updated');
+            });
+          }  
+        });
+    }
+  })
     
     .delete(function (req, res){
       var project = req.params.project;
       
       if (!req.body._id) { res.send('_id error'); }
-      
-      issueModel.findOneAndDelete({_id: req.body._id}, function(err, data){
-        if (err) { res.send('could not delete ' + data._id); }
-        res.send('deleted ' + data._id);
-      }); 
+      else{
+        issueModel.findOneAndDelete({_id: req.body._id}, function(err, data){
+          if (err) { res.send('could not delete ' + data._id); }
+          res.send('deleted ' + data._id);
+        }); 
+      }
     });
     
 };
