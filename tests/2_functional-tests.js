@@ -197,15 +197,19 @@ suite('Functional Tests', function() {
         .end(function(err, res){
           assert.equal(res.status, 200);
           assert.isArray(res.body);
-          assert.equal(res.body[0].issue_title, 'Multiple');
+          assert.property(res.body[0], '_id');
+	        assert.property(res.body[0], 'issue_title');
           assert.property(res.body[0], 'issue_text');
           assert.property(res.body[0], 'created_on');
+          assert.property(res.body[0], 'created_by');
           assert.property(res.body[0], 'updated_on');
+          assert.property(res.body[0], 'assigned_to');
+          assert.property(res.body[0], 'status_text');
+          assert.property(res.body[0], 'open');
+          assert.equal(res.body[0].issue_title, 'Multiple');  
           assert.equal(res.body[0].created_by, 'genie');
           assert.equal(res.body[0].assigned_to, 'joseph');
-          assert.property(res.body[0], 'open');
           assert.equal(res.body[0].status_text, 'under review');
-          assert.property(res.body[0], '_id');
           done();
         });
       });
